@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<title>测测你的二次元恋爱人格 | 25位热门动漫角色</title>
+<style>
+  :root {
+    --bg: #0d0814;
+    --card: #1a1028;
+    --card2: #221838;
+    --text: #e8ddf5;
+    --dim: #9a8aaf;
+    --pink: #ff6b9d;
+    --purple: #b388ff;
+    --gold: #ffd740;
+    --cyan: #84ffff;
+    --rose: #ff80ab;
+    --border: #2a1a3a;
+    --radius: 16px;
+    --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body {
+    width:100%; height:100%; overflow:hidden;
+    background:var(--bg); color:var(--text);
+    font-family:var(--font); font-size:15px;
+    -webkit-tap-highlight-color:transparent;
+    -webkit-font-smoothing:antialiased;
+    user-select:none; -webkit-user-select:none;
+  }
+
+  /* ========== BG PARTICLES ========== */
+  #bg-canvas { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+
+  /* ========== APP SHELL ========== */
+  #app { position:relative; z-index:1; width:100%; height:100%; display:flex; flex-direction:column; overflow:hidden; }
+
+  /* ========== SCREENS ========== */
+  .screen {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    display:flex; flex-direction:column; align-items:center;
+    padding:24px 20px; overflow-y:auto;
+    opacity:0; pointer-events:none;
+    transition:opacity .35s ease;
+    -webkit-overflow-scrolling:touch;
+  }
+  .screen.active { opacity:1; pointer-events:auto; }
+
+  /* ========== START SCREEN ========== */
+  .logo-icon { font-size:64px; margin-top:12px; animation:float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+  .title {
+    font-size:28px; font-weight:900; text-align:center;
+    background:linear-gradient(135deg, var(--pink), var(--purple), var(--cyan));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text;
+    line-height:1.3; margin:8px 0;
+  }
+  .subtitle { font-size:14px; color:var(--dim); text-align:center; line-height:1.6; margin:4px 0 16px; }
+  .love-badge {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 16px; border-radius:20px;
+    background:rgba(255,107,157,.1); border:1px solid rgba(255,107,157,.25);
+    font-size:12px; color:var(--pink); margin-bottom:20px;
+  }
+  .love-badge .dot { width:6px; height:6px; border-radius:50%; background:var(--pink); animation:pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+  /* ========== BUTTONS ========== */
+  .btn {
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:14px 32px; border-radius:28px; border:none;
+    font-size:16px; font-weight:700; cursor:pointer;
+    font-family:var(--font);
+    transition:transform .15s ease, box-shadow .15s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn:active { transform:scale(.96); }
+  .btn-primary {
+    background:linear-gradient(135deg, var(--pink), #e040fb);
+    color:#fff; box-shadow:0 4px 24px rgba(255,107,157,.35);
+  }
+  .btn-outline {
+    background:transparent; color:var(--pink);
+    border:1.5px solid rgba(255,107,157,.4);
+  }
+  .btn-sm { padding:10px 22px; font-size:14px; }
+
+  /* ========== QUIZ SCREEN ========== */
+  .quiz-header { width:100%; max-width:420px; margin-bottom:20px; }
+  .quiz-topbar {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:8px;
+  }
+  .question-number { font-size:13px; color:var(--pink); font-weight:600; }
+  .progress-bar-outer {
+    width:100%; height:5px; border-radius:3px;
+    background:rgba(255,255,255,.06); overflow:hidden;
+  }
+  .progress-bar-inner {
+    height:100%; border-radius:3px;
+    background:linear-gradient(90deg, var(--pink), var(--purple));
+    transition:width .3s ease;
+  }
+  .question-text {
+    width:100%; max-width:420px;
+    font-size:20px; font-weight:700; text-align:center;
+    line-height:1.5; margin-bottom:28px;
+    background:linear-gradient(180deg, #fff, #ddd);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text;
+  }
+  .options-list { width:100%; max-width:420px; display:flex; flex-direction:column; gap:10px; }
+  .option-btn {
+    width:100%; padding:16px 18px; border-radius:var(--radius);
+    background:var(--card); border:1.5px solid var(--border);
+    color:var(--text); font-size:15px; text-align:left;
+    cursor:pointer; font-family:var(--font);
+    transition:all .15s ease;
+    -webkit-tap-highlight-color:transparent;
+    line-height:1.4;
+  }
+  .option-btn:active { transform:scale(.98); }
+  .option-btn.selected {
+    border-color:var(--pink);
+    background:rgba(255,107,157,.08);
+    color:var(--pink);
+  }
+  .option-letter {
+    display:inline-block; width:22px; height:22px; border-radius:50%;
+    background:rgba(255,255,255,.06); font-size:12px; font-weight:700;
+    text-align:center; line-height:22px; margin-right:10px;
+    color:var(--dim);
+  }
+  .option-btn.selected .option-letter { background:var(--pink); color:#fff; }
+
+  /* ========== RESULT SCREEN ========== */
+  .result-card {
+    width:100%; max-width:380px;
+    background:var(--card); border-radius:20px;
+    border:1px solid var(--border);
+    padding:28px 20px;
+    display:flex; flex-direction:column; align-items:center;
+    gap:12px; margin-top:8px;
+  }
+  .result-avatar { font-size:72px; }
+  .result-name {
+    font-size:26px; font-weight:900; text-align:center;
+    background:linear-gradient(135deg, var(--pink), var(--purple));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text;
+  }
+  .result-anime { font-size:13px; color:var(--dim); text-align:center; line-height:1.6; }
+  .result-anime b { color:var(--text); }
+  .result-traits { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; }
+  .trait-tag {
+    padding:5px 12px; border-radius:14px;
+    background:rgba(255,107,157,.1); color:var(--pink);
+    font-size:12px; font-weight:600;
+  }
+  .result-type {
+    font-size:14px; color:var(--gold); font-weight:700;
+    padding:6px 16px; border-radius:14px;
+    background:rgba(255,215,64,.08); border:1px solid rgba(255,215,64,.2);
+  }
+  .result-desc { font-size:14px; color:var(--dim); text-align:center; line-height:1.7; }
+  .result-quote {
+    font-size:15px; font-style:italic; color:var(--purple);
+    text-align:center; padding:10px 0;
+    border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+    width:100%;
+  }
+  .result-match {
+    font-size:13px; color:var(--dim); text-align:center;
+    background:rgba(255,255,255,.03); padding:10px 16px;
+    border-radius:12px; width:100%;
+  }
+  .result-match b { color:var(--pink); }
+  .result-actions { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+
+  /* ========== POSTER MODAL ========== */
+  #poster-modal {
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,.92); z-index:100;
+    display:flex; flex-direction:column; align-items:center;
+    justify-content:center; gap:16px;
+    opacity:0; pointer-events:none;
+    transition:opacity .3s ease; padding:20px;
+  }
+  #poster-modal.show { opacity:1; pointer-events:auto; }
+  #poster-canvas { max-width:90vw; max-height:65vh; border-radius:12px; box-shadow:0 4px 30px rgba(0,0,0,.6); }
+  .poster-hint { font-size:13px; color:var(--dim); text-align:center; }
+  .poster-hint .icon { font-size:18px; }
+
+  /* ========== RESPONSIVE ========== */
+  @media (min-width:480px) {
+    .screen { padding:32px 28px; }
+    .title { font-size:32px; }
+    .question-text { font-size:22px; }
+    .result-card { max-width:420px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div id="app">
+
+  <!-- ===== START ===== -->
+  <div class="screen active" id="screen-start">
+    <div class="logo-icon">💘</div>
+    <div class="title">测测你的<br>二次元恋爱人格</div>
+    <div class="subtitle">
+      30 道二次元情境题 · 25 位热门角色<br>
+      找到和你恋爱风格最像的那个动漫人物
+    </div>
+    <div class="love-badge">
+      <span class="dot"></span> 含：病娇 / 傲娇 / 直球 / 天然 / 冰山 …… 你属于哪一种？
+    </div>
+    <button class="btn btn-primary" onclick="startQuiz()">💕 开始测试</button>
+    <div style="font-size:12px;color:var(--dim);text-align:center;">约 6 分钟 · 30 题 · 25 种恋爱人格</div>
+  </div>
+
+  <!-- ===== QUIZ ===== -->
+  <div class="screen" id="screen-quiz">
+    <div class="quiz-header">
+      <div class="quiz-topbar">
+        <span class="question-number" id="q-num-label">第 1 / 30 题</span>
+        <span id="q-progress-text" style="font-size:13px;color:var(--dim);">0%</span>
+      </div>
+      <div class="progress-bar-outer">
+        <div class="progress-bar-inner" id="progress-bar" style="width:0%;"></div>
+      </div>
+    </div>
+    <div class="question-text" id="q-text"></div>
+    <div class="options-list" id="options-container"></div>
+  </div>
+
+  <!-- ===== RESULT ===== -->
+  <div class="screen" id="screen-result"></div>
+
+</div>
+
+<!-- ===== POSTER MODAL ===== -->
+<div id="poster-modal">
+  <canvas id="poster-canvas"></canvas>
+  <div class="poster-hint"><span class="icon">👆</span> 长按图片保存到相册</div>
+  <button class="btn btn-outline btn-sm" onclick="closePoster()">关闭</button>
+</div>
+
+<script>
+// ==================== BG ====================
+(function(){
+  const c=document.getElementById('bg-canvas'),x=c.getContext('2d');
+  let ps=[],w,h;
+  function R(){w=c.width=innerWidth;h=c.height=innerHeight}
+  R();addEventListener('resize',R);
+  for(let i=0;i<45;i++)ps.push({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,r:Math.random()*1.8+.4,a:Math.random()*.3+.08});
+  (function D(){
+    x.clearRect(0,0,w,h);
+    for(let p of ps){p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=w;if(p.x>w)p.x=0;if(p.y<0)p.y=h;if(p.y>h)p.y=0;x.beginPath();x.arc(p.x,p.y,p.r,0,Math.PI*2);x.fillStyle=`rgba(255,107,157,${p.a})`;x.fill()}
+    for(let i=0;i<ps.length;i++)for(let j=i+1;j<ps.length;j++){let dx=ps[i].x-ps[j].x,dy=ps[i].y-ps[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<70){x.beginPath();x.moveTo(ps[i].x,ps[i].y);x.lineTo(ps[j].x,ps[j].y);x.strokeStyle=`rgba(179,136,255,${.05*(1-d/70)})`;x.stroke()}}
+    requestAnimationFrame(D)
+  })()
+})();
+
+// ==================== DATA: 25 Characters ====================
+const characters = [
+  {
+    id:'kirito',emoji:'⚔️',name:'桐谷和人',aka:'黑衣剑士',
+    anime:'刀剑神域',animeJa:'SAO',type:'专一直球型',
+    traits:['专一','行动派','外冷内热','认定就不放手'],
+    desc:'爱上一个人就全速前进，没有犹豫没有摇摆。对他来说，恋爱就是一场不能输的 Boss 战——锁定目标、全力输出、直到通关。虽然平时话不多，但用行动证明一切。',
+    quote:'"我不会离开你。就算是在游戏里，我也一定会保护你。"',
+    match:'最适合：能接住直球、不玩暧昧的坦率型伴侣',
+    color:'#00bcd4'
+  },
+  {
+    id:'hachiman',emoji:'🐟',name:'比企谷八幡',aka:'大老师',
+    anime:'我的青春恋爱物语果然有问题',animeJa:'やはり俺の青春ラブコメはまちがっている。',type:'自爆型孤独者',
+    traits:['自我牺牲','看透人心','别扭','温柔得笨拙'],
+    desc:'宁愿自己被所有人讨厌，也要保护那个不想伤害的人。嘴上说着"青春是谎言"，其实比谁都在意。他的爱藏在每句自嘲下面——不张扬，但沉甸甸的。',
+    quote:'"我想要真物。不是虚伪的温柔，不是表面的关系——是真正的东西。"',
+    match:'最适合：能看穿他别扭背后真心、主动靠近的温柔型',
+    color:'#607d8b'
+  },
+  {
+    id:'subaru',emoji:'🔄',name:'菜月昴',aka:'486',
+    anime:'Re:从零开始的异世界生活',animeJa:'Re:ゼロから始める異世界生活',type:'痴情奉献型',
+    traits:['永不放弃','自我牺牲','热烈','为爱轮回'],
+    desc:'为了那个人，他可以死无数次。每一次挣扎、每一次痛苦都不是白费的——他的爱是实打实拿命换来的。有时候看起来狼狈又笨拙，但这正是他爱的重量。',
+    quote:'"不管重来多少次——我都会拯救你！"',
+    match:'最适合：需要被坚定选择的、内心有伤痕的人',
+    color:'#ff7043'
+  },
+  {
+    id:'taiga',emoji:'🐯',name:'逢坂大河',aka:'掌中老虎',
+    anime:'龙与虎',animeJa:'とらドラ！',type:'傲娇天花板',
+    traits:['傲娇','暴娇','善良','刀子嘴豆腐心'],
+    desc:'嘴上说着"笨狗！""去死！"，手里已经帮你做好了便当。她的温柔从不直接出口——但每一个细节都在说"我在乎你"。傲是保护色，娇才是本体。',
+    quote:'"我才不是因为你才做的！……只是顺手。只是顺手而已！"',
+    match:'最适合：能看穿傲娇保护色、耐心包容的厚脸皮型',
+    color:'#ff8a65'
+  },
+  {
+    id:'senjougahara',emoji:'📎',name:'战场原黑仪',aka:'荡漾',
+    anime:'物语系列',animeJa:'化物語',type:'毒舌女王型',
+    traits:['毒舌','用文具表达爱','极端坦率','独占欲强'],
+    desc:'她的示爱方式是给你一记订书机然后说"我爱你"。极度坦率到令人发指，从不拐弯抹角。被爱上是危险的——但也是无比幸福的，因为她会把你放进心里最深处。',
+    quote:'"我喜欢你。所以，请你去死。"（然后露出真心的微笑）',
+    match:'最适合：受得了毒舌、看得懂真心、有 M 倾向的勇士',
+    color:'#7c4dff'
+  },
+  {
+    id:'houtarou',emoji:'☕',name:'折木奉太郎',aka:'节能主义者',
+    anime:'冰菓',animeJa:'氷菓',type:'佛系被动型',
+    traits:['节能','被动','慢热','一旦觉醒就停不下来'],
+    desc:'信奉"没必要的事不做，必须做的事尽快解决"。恋爱是人生中最大的"没必要的事"——直到遇见那个让人忍不住想要耗能的人。一旦启动恋爱模式，比谁都认真。',
+    quote:'"没必要的事不做……可是关于你的事，好像全都是必要的。"',
+    match:'最适合：愿意主动拉他一把、能欣赏慢热魅力的耐心型',
+    color:'#8d6e63'
+  },
+  {
+    id:'zero_two',emoji:'🦖',name:'零二',aka:'002',
+    anime:'DARLING in the FRANXX',animeJa:'ダーリン・イン・ザ・フランキス',type:'野性占有型',
+    traits:['野性','独占欲','热烈','认定 Darling 就不放'],
+    desc:'一旦认定你就是她的 Darling，全世界都别想把你从她身边抢走。她的爱是原始的、冲动的、不给你任何退路的——但也是最纯粹的：你就是她的全世界。',
+    quote:'"找到了。我的 Darling。"',
+    match:'最适合：愿意被热烈需要、享受被独占的从属型伴侣',
+    color:'#e91e63'
+  },
+  {
+    id:'yuno',emoji:'🔪',name:'我妻由乃',aka:'病娇教科书',
+    anime:'未来日记',animeJa:'未来日記',type:'病娇偏执型',
+    traits:['病娇','偏执','要么全部要么零','保护欲极端化'],
+    desc:'教科书级别的病娇——我爱你，所以你的世界里只能有我。她的爱是一间没有出口的房间，温暖又令人窒息。但不可否认，她会用生命守护的人，只有你一个。',
+    quote:'"阿雪只要看着我一个人就够了。其他人……都没必要存在。"',
+    match:'最适合：……建议一个人过（开玩笑，需要极度稳定的包容型）',
+    color:'#d50000'
+  },
+  {
+    id:'tanjiro',emoji:'☀️',name:'灶门炭治郎',aka:'太阳系暖男',
+    anime:'鬼灭之刃',animeJa:'鬼滅の刃',type:'暖男治愈型',
+    traits:['温柔','善良','共情力拉满','暖到融化'],
+    desc:'即使面对鬼也会为其悲伤的极致善人。和他在一起就像永远晒着暖洋洋的太阳——他会闻到你难过的味道，然后默默陪在你身边直到你笑出来。恋爱中的他就是一台永动取暖器。',
+    quote:'"没关系的。不管发生什么，我都会陪在你身边。"',
+    match:'最适合：需要被治愈、渴望安全感的小可怜',
+    color:'#ffab00'
+  },
+  {
+    id:'mai',emoji:'🐰',name:'樱岛麻衣',aka:'兔女郎学姐',
+    anime:'青春猪头少年不会梦到兔女郎学姐',animeJa:'青春ブタ野郎',type:'成熟包容型',
+    traits:['成熟','包容','会撩','偶尔撒娇'],
+    desc:'看似高冷完美的学姐，实则是教科书级的"完美女友"。她会给你恰到好处的撩拨，也会在你脆弱时收起玩笑认真对待。成熟不是不撒娇——她只在你面前露出那一面。',
+    quote:'"我不会消失。只要你记得我，我就会一直在这里。"',
+    match:'最适合：渴望成熟关系、但又想要甜蜜互动的平衡型',
+    color:'#e040fb'
+  },
+  {
+    id:'kaguya',emoji:'🏰',name:'四宫辉夜',aka:'辉夜大小姐',
+    anime:'辉夜大小姐想让我告白',animeJa:'かぐや様は告らせたい',type:'傲娇智斗型',
+    traits:['傲娇','高智商','死要面子','脑内小剧场'],
+    desc:'喜欢一个人到脑内开了 30 集恋爱头脑战——但嘴上死活不认。她的恋爱是战略游戏，谁先告白谁就输了（虽然自己已经输得一塌糊涂）。骄傲是盾牌，但真心总有一天会刺穿它。',
+    quote:'"谁、谁要喜欢那种人啊！……不过他人确实还不错……不是那个意思！"',
+    match:'最适合：能陪她玩恋爱头脑战、最终温柔认输的对手型',
+    color:'#d500f9'
+  },
+  {
+    id:'eren',emoji:'🕊️',name:'艾伦·耶格尔',aka:'自由之翼',
+    anime:'进击的巨人',animeJa:'進撃の巨人',type:'偏执极端型',
+    traits:['偏执','为自由不顾一切','爱是毁灭也是守护'],
+    desc:'他的爱和恨一样炽烈。为了保护重要的人，他可以成为世界的敌人。恋爱对他来说不是风花雪月——是"哪怕与全世界为敌，我也要让你自由"。极致、极端、极危险。',
+    quote:'"因为我诞生在这个世界上。"',
+    match:'最适合：和他有共同目标、能接受极端选择的战友型',
+    color:'#4caf50'
+  },
+  {
+    id:'kaneki',emoji:'🔴',name:'金木研',aka:'眼罩君',
+    anime:'东京喰种',animeJa:'東京喰種',type:'温柔破碎型',
+    traits:['温柔','破碎感','自我牺牲','在痛苦中淬炼'],
+    desc:'最温柔的人往往承受最大的痛苦。他的恋爱带着一种破碎的美感——他太知道痛是什么滋味，所以舍不得让爱的人受一点伤。即使自己已经碎了一地，他还在安慰别人。',
+    quote:'"这个世界是错误的。但即使如此……我也想保护你。"',
+    match:'最适合：能帮他重新相信这个世界、给他温暖的治愈型',
+    color:'#f44336'
+  },
+  {
+    id:'yukino',emoji:'❄️',name:'雪之下雪乃',aka:'冰山美人',
+    anime:'我的青春恋爱物语果然有问题',animeJa:'やはり俺の青春ラブコメはまちがっている。',type:'冰山融化型',
+    traits:['冰山','完美主义','内心柔软','嘴硬'],
+    desc:'表面是冻住一切的冰雪女王，内心却住着一个渴望被理解的小女孩。她的爱像春天融雪——缓慢、克制、但一旦开始就停不下来。对的人会让这座冰山变成温泉。',
+    quote:'"我不是不想依赖别人……只是不知道该怎么依赖。"',
+    match:'最适合：能耐心融化冰山、不惧怕她刺人外壳的恒温型',
+    color:'#90caf9'
+  },
+  {
+    id:'miyuki',emoji:'📖',name:'白银御行',aka:'会长',
+    anime:'辉夜大小姐想让我告白',animeJa:'かぐや様は告らせたい',type:'努力追爱型',
+    traits:['努力','笨拙','真诚','为爱变强'],
+    desc:'他的恋爱哲学是：喜欢一个人，就先成为配得上她的人。拼命打工、熬夜学习、练舞到吐——所有努力的理由都是"想让她看看更好的我"。诚实到笨拙，但真诚永远是最强的武器。',
+    quote:'"为了让你喜欢我——我什么都愿意做。"',
+    match:'最适合：欣赏努力、不介意笨拙真心的真诚型',
+    color:'#ffc107'
+  },
+  {
+    id:'utaha',emoji:'💜',name:'霞之丘诗羽',aka:'腹黑学姐',
+    anime:'路人女主的养成方法',animeJa:'冴えない彼女の育てかた',type:'腹黑诱惑型',
+    traits:['腹黑','成熟','诱惑','占有欲'],
+    desc:'用最优雅的姿态说出最大胆的话。她的恋爱是高级猎人的游戏——你以为你在追她，其实她早就在终点等着你。腹黑是她的魅力点，但一旦认真起来，比谁都深情。',
+    quote:'"前辈，你这样吊人胃口……是想要被惩罚吗？"',
+    match:'最适合：扛得住她的言语调戏、能反攻的高段位型',
+    color:'#9c27b0'
+  },
+  {
+    id:'rei_ayanami',emoji:'🌙',name:'绫波丽',aka:'三无少女',
+    anime:'新世纪福音战士',animeJa:'新世紀エヴァンゲリオン',type:'三无懵懂型',
+    traits:['无口','无心','无表情','慢慢学会爱'],
+    desc:'不懂什么是爱——但她正在努力学。她的恋爱是缓慢的、笨拙的、小心翼翼的。每一次脸红、每一个迟疑的"谢谢"，都是她走向你的脚步。爱对她来说是陌生的语言，但她愿意为你开口。',
+    quote:'"我不知道这时候该露出什么表情……但和你在一起，很安心。"',
+    match:'最适合：不着急、愿意慢慢教她什么是爱的引导型',
+    color:'#b0bec5'
+  },
+  {
+    id:'tomoya',emoji:'🏠',name:'冈崎朋也',aka:'不良少年',
+    anime:'CLANNAD',animeJa:'CLANNAD',type:'成长守护型',
+    traits:['成长','守护','从逃避到担当','家的意义'],
+    desc:'曾经对一切都不屑一顾，直到遇见了让他想守护一生的人。他的恋爱是成长的旅程——从逃避到面对，从男孩到父亲。爱让他变成了最好的自己。',
+    quote:'"如果有一天我不在了……请一定要幸福地活下去。"',
+    match:'最适合：愿意陪一个人从男孩成长为男人的陪伴型',
+    color:'#ff9800'
+  },
+  {
+    id:'makise',emoji:'🔬',name:'牧濑红莉栖',aka:'助手',
+    anime:'命运石之门',animeJa:'STEINS;GATE',type:'傲娇学者型',
+    traits:['智商高','傲娇','科学理性','内心感性'],
+    desc:'18 岁的天才神经科学家，对感情的分析可以写满一墙白板——但实践能力为零。嘴上说着"这是理论分析"，心跳已经出卖了一切。她的爱需要 1.048596 条世界线来确认。',
+    quote:'"我不是因为相信你才在这里的……是因为实验数据支持。"（脸红了）',
+    match:'最适合：智商匹配、能和她进行脑力交锋的天才型',
+    color:'#ff5252'
+  },
+  {
+    id:'mashiro',emoji:'🎨',name:'椎名真白',aka:'宠物女孩',
+    anime:'樱花庄的宠物女孩',animeJa:'さくら荘のペットな彼女',type:'天然呆天才型',
+    traits:['天然','天才','生活自理为零','直球攻击'],
+    desc:'世界级的天才画家，但连穿衣服都需要人帮忙。她的恋爱是纯粹的、不加任何修饰的"直球"——喜欢就说喜欢，想见你就来找你。在她的世界里，恋爱不需要计算，只需要本能。',
+    quote:'"空太，我饿了。空太，帮我穿衣服。空太——我喜欢你。"',
+    match:'最适合：有耐心、会照顾人、不介意当全职保姆的奉献型',
+    color:'#ff80ab'
+  },
+  {
+    id:'gintoki',emoji:'🍓',name:'坂田银时',aka:'万事屋阿银',
+    anime:'银魂',animeJa:'銀魂',type:'废柴可靠型',
+    traits:['废柴','甜食控','关键时刻燃到炸','日常懒散'],
+    desc:'平时是死鱼眼天然卷的废柴大叔，懒到令人发指。但当重要的人陷入危机——他可以单挑一支军队。他的爱不是甜言蜜语，是"滚开，这个人由我保护"。',
+    quote:'"我只是一个普通的万事屋老板。但有人想动我的人——那就是另一回事了。"',
+    match:'最适合：欣赏反差萌、不在意日常懒散的包容型',
+    color:'#69f0ae'
+  },
+  {
+    id:'chitanda',emoji:'✨',name:'千反田爱瑠',aka:'好奇宝宝',
+    anime:'冰菓',animeJa:'氷菓',type:'纯真好奇型',
+    traits:['好奇心旺盛','纯真','大小姐','认真'],
+    desc:'她的口头禅是"我很好奇！"——而这句话总能让人忍不住帮她解开所有谜题。恋爱里的她是纯粹的好奇心驱动，每一个关于你的细节她都想了解。她的爱是闪闪发光的。',
+    quote:'"我很好奇！关于你的一切——我都想知道。"',
+    match:'最适合：享受被关注、愿意分享内心世界的话匣子型',
+    color:'#a5d6a7'
+  },
+  {
+    id:'sesshoumaru',emoji:'🌕',name:'杀生丸',aka:'贵公子',
+    anime:'犬夜叉',animeJa:'犬夜叉',type:'冰山贵公子型',
+    traits:['冰山','高贵','不屑表达','默默守护'],
+    desc:'犬妖贵公子，认为感情是多余的东西——直到一个小女孩的出现改变了一切。他的爱是高冷的、无声的、从不解释的——但当你回头，他永远站在不远处。',
+    quote:'"……我没有要保护你。只是顺便。"',
+    match:'最适合：不需要甜言蜜语、能读懂沉默语言的默契型',
+    color:'#e0e0e0'
+  },
+  {
+    id:'chika',emoji:'🎲',name:'藤原千花',aka:'书记',
+    anime:'辉夜大小姐想让我告白',animeJa:'かぐや様は告らせたい',type:'混沌乐天型',
+    traits:['混沌','乐天','气氛破坏者','天然撩'],
+    desc:'完全读不懂空气——或者说她根本不在乎。她的恋爱是不可预测的台风，你永远不知道下一秒她会给你惊喜还是惊吓。但和她在一起，每一天都是冒险，永远不会无聊。',
+    quote:'"诶嘿嘿～我不太懂这些啦！但是很快乐不是吗！"',
+    match:'最适合：生活太沉闷、急需混沌能量注入的乏味型',
+    color:'#ffeb3b'
+  },
+  {
+    id:'kousei',emoji:'🎹',name:'有马公生',aka:'人形节拍器',
+    anime:'四月是你的谎言',animeJa:'四月は君の嘘',type:'被治愈的天才型',
+    traits:['天才','温柔','被治愈','从阴影走向光明'],
+    desc:'曾经听不见自己弹琴的声音——直到那个女孩像春天一样闯进他的生命。他的恋爱是从灰暗到彩色的蜕变。被爱的人教会了如何去爱，然后带着这份礼物继续前行。',
+    quote:'"春天，马上就要来了。让我与你相遇的春天，就要来了。"',
+    match:'最适合：想要成为谁的春天、用温柔改变一个人的阳光型',
+    color:'#80deea'
+  }
+];
+
+// ==================== 30 Questions ====================
+const questions = [
+  {
+    q:'在教室/办公室里，你突然发现暗恋对象也在看你——',
+    options:[
+      {text:'立刻移开视线，假装在看窗外，心跳加速',chars:['yukino','rei_ayanami','houtarou']},
+      {text:'直视回去，露出一个"怎么，不能看？"的微笑',chars:['senjougahara','zero_two','mai']},
+      {text:'内心脑补了一百种 ta 喜欢你的证据，然后和朋友疯狂讨论',chars:['kaguya','taiga','makise']},
+      {text:'直接走过去搭话——好机会不能浪费',chars:['kirito','miyuki','chika']}
+    ]
+  },
+  {
+    q:'约会那天，对象迟到了 30 分钟，你的内心 OS 是——',
+    options:[
+      {text:'"不会是出事了吧……"脑补了一万种交通事故',chars:['subaru','kaneki','tanjiro']},
+      {text:'"敢放我鸽子试试看"——已经在心里准备了 10 种惩罚方案',chars:['yuno','senjougahara','kaguya']},
+      {text:'"正好，多打一局游戏"——完全无所谓',chars:['gintoki','houtarou','sesshoumaru']},
+      {text:'"可能堵车了吧，我先把菜单研究好"——淡定得一批',chars:['tomoya','mai','mashiro']}
+    ]
+  },
+  {
+    q:'暗恋对象突然说"我有话想单独跟你说"——',
+    options:[
+      {text:'表面冷静，内心已经放了三分钟烟花了',chars:['yukino','houtarou','makise']},
+      {text:'"终于来了！！！"——内心的小人已经在跳桑巴',chars:['kaguya','miyuki','taiga']},
+      {text:'"？？什么事情？"——完全没往恋爱方向想',chars:['mashiro','rei_ayanami','chitanda']},
+      {text:'"好啊，我也有话想跟你说"——反客为主',chars:['kirito','senjougahara','zero_two']}
+    ]
+  },
+  {
+    q:'你和对象走在路上，对面走来一个超级好看的异性——',
+    options:[
+      {text:'立刻观察对象的反应，自己没什么感觉',chars:['tanjiro','tomoya','houtarou']},
+      {text:'"看什么看。"——用眼神杀死那个路人和对象',chars:['yuno','zero_two','senjougahara']},
+      {text:'"那个人确实挺好看的"——坦率承认，完全不在意',chars:['mai','gintoki','chika']},
+      {text:'偷偷比较了一下自己和路人的差距，开始自我怀疑',chars:['hachiman','kaneki','subaru']}
+    ]
+  },
+  {
+    q:'对象生病了，你的第一反应是——',
+    options:[
+      {text:'飞奔过去，带了药、粥、毯子和全套护理方案',chars:['tanjiro','subaru','miyuki']},
+      {text:'"笨死了，连自己都照顾不好"——嘴上嫌弃但已经系上围裙在熬汤了',chars:['taiga','senjougahara','tomoya']},
+      {text:'立刻 Google"XX症状 怎么办"，制定科学护理计划',chars:['makise','kaguya','houtarou']},
+      {text:'"要我过去吗？"——先确认对方需不需要，不擅自行动',chars:['yukino','sesshoumaru','rei_ayanami']}
+    ]
+  },
+  {
+    q:'你觉得"命中注定"是什么？',
+    options:[
+      {text:'命运是可以创造的，不是等来的',chars:['kirito','miyuki','eren']},
+      {text:'我不信命运，但我信你',chars:['hachiman','gintoki','sesshoumaru']},
+      {text:'就是你在无数条世界线中，每次都选择了我',chars:['subaru','makise','yuno']},
+      {text:'是我很好奇为什么是你——然后发现答案就是你',chars:['chitanda','houtarou','mashiro']}
+    ]
+  },
+  {
+    q:'发现情敌出现了，你的应对方式是——',
+    options:[
+      {text:'直接宣示主权——"ta 是我的，你没戏"',chars:['zero_two','yuno','senjougahara']},
+      {text:'默默提升自己，用实力碾压情敌',chars:['miyuki','tomoya','kaneki']},
+      {text:'先观察敌情，制定一套完整的攻略方案',chars:['kaguya','makise','houtarou']},
+      {text:'尊重对象的选择，不会主动争抢',chars:['tanjiro','yukino','sesshoumaru']}
+    ]
+  },
+  {
+    q:'和对象大吵了一架，冷战两天后你会——',
+    options:[
+      {text:'主动去道歉，不管谁对谁错——关系比道理重要',chars:['tanjiro','subaru','miyuki']},
+      {text:'等对方来道歉，虽然自己也很想和好但死要面子',chars:['taiga','kaguya','makise']},
+      {text:'写一封超长的文字信息分析吵架原因并提出解决方案',chars:['hachiman','houtarou','yukino']},
+      {text:'用行动代替语言——默默帮 ta 做完该做的事',chars:['tomoya','gintoki','sesshoumaru']}
+    ]
+  },
+  {
+    q:'你为喜欢的人做过（或可能做）最疯狂的事——',
+    options:[
+      {text:'为了 ta 穿越 N 条世界线 / 轮回无数次',chars:['subaru','makise','yuno']},
+      {text:'为了 ta 去对抗全世界',chars:['eren','zero_two','kaneki']},
+      {text:'为了 ta 变成一个更好的自己',chars:['miyuki','tomoya','hachiman']},
+      {text:'疯狂？恋爱本身就很疯狂了，不需要额外做什么',chars:['gintoki','chika','mashiro']}
+    ]
+  },
+  {
+    q:'第一次牵手——',
+    options:[
+      {text:'假装不经意碰到，然后慢慢握住——心跳声大到怕被听到',chars:['houtarou','makise','yukino']},
+      {text:'直接牵上去，然后一脸得意地看着 ta',chars:['kirito','zero_two','senjougahara']},
+      {text:'手伸到一半又缩回来，纠结了一路最后被 ta 牵了',chars:['taiga','kaguya','rei_ayanami']},
+      {text:'没注意什么时候牵上的，回过神来已经走了一路了',chars:['mai','tanjiro','mashiro']}
+    ]
+  },
+  {
+    q:'对象说"我想你了"——你回复——',
+    options:[
+      {text:'"我也想你"——简单直接',chars:['tanjiro','kirito','tomoya']},
+      {text:'"……嗯。"（内心：啊啊啊啊啊！！！！！）',chars:['yukino','taiga','sesshoumaru']},
+      {text:'"想我哪里？说具体一点，我想听"',chars:['mai','senjougahara','zero_two']},
+      {text:'"那我现在过去找你"——直接行动',chars:['miyuki','subaru','eren']}
+    ]
+  },
+  {
+    q:'你理想中的约会场景是——',
+    options:[
+      {text:'安静的地方——图书馆、咖啡厅、或者只是在家里一起待着',chars:['houtarou','yukino','rei_ayanami']},
+      {text:'有趣的地方——游乐园、电玩城、密室逃脱',chars:['chika','chitanda','kirito']},
+      {text:'有氛围的地方——星空下、海边、夜景天台',chars:['mai','makise','kaneki']},
+      {text:'吃什么才是最重要的——美食街逛吃逛吃',chars:['gintoki','taiga','mashiro']}
+    ]
+  },
+  {
+    q:'恋爱中你最不能接受的是——',
+    options:[
+      {text:'谎言和背叛',chars:['hachiman','subaru','tomoya']},
+      {text:'暧昧不清的态度——要喜欢就好好喜欢',chars:['kirito','zero_two','senjougahara']},
+      {text:'对方因为我在乎而觉得理所当然',chars:['tanjiro','kaneki','miyuki']},
+      {text:'无聊——如果恋爱很无聊还不如单身',chars:['chika','eren','yuno']}
+    ]
+  },
+  {
+    q:'对象和一群异性朋友出去聚会，你的感受是——',
+    options:[
+      {text:'完全信任，去玩吧——但手机要保持畅通',chars:['mai','tanjiro','tomoya']},
+      {text:'嘴上说"没事"，其实在意得要死，会反复看手机',chars:['kaguya','taiga','makise']},
+      {text:'"我也要去"——不是不信任你，是我想参与你的一切',chars:['zero_two','chitanda','subaru']},
+      {text:'已经在脑补所有可能出事的场景了',chars:['yuno','kaneki','hachiman']}
+    ]
+  },
+  {
+    q:'你更向往哪种恋爱关系？',
+    options:[
+      {text:'战友型——并肩作战，共同成长',chars:['kirito','eren','miyuki']},
+      {text:'互补型——你是我的拼图缺口，我是你的',chars:['hachiman','yukino','tomoya']},
+      {text:'宠溺型——被你宠上天，或者把你宠上天',chars:['tanjiro','subaru','mashiro']},
+      {text:'激情型——每一天都像第一天恋爱',chars:['zero_two','senjougahara','chika']}
+    ]
+  },
+  {
+    q:'恋爱和梦想冲突了，你必须二选一——',
+    options:[
+      {text:'选梦想——真正爱你的人不会让你放弃梦想',chars:['mai','yukino','makise']},
+      {text:'选恋爱——梦想可以换，但这个人只有一个',chars:['subaru','tanjiro','miyuki']},
+      {text:'不选——我会找到两全的方法，不试过怎么知道不行',chars:['kirito','hachiman','eren']},
+      {text:'看情况——哪边更需要我，我就去哪边',chars:['tomoya','gintoki','kaneki']}
+    ]
+  },
+  {
+    q:'如果你对一个人有好感，你会——',
+    options:[
+      {text:'主动出击，约 ta 出来——磨磨唧唧不是我的风格',chars:['kirito','senjougahara','zero_two']},
+      {text:'暗中观察 ta 三个月以上，收集足够信息再行动',chars:['kaguya','makise','houtarou']},
+      {text:'不敢表白，默默对 ta 好，希望 ta 自己发现',chars:['rei_ayanami','hachiman','kaneki']},
+      {text:'用玩笑和打闹掩饰——其实每一句玩笑都是真心话',chars:['taiga','chika','gintoki']}
+    ]
+  },
+  {
+    q:'对象说要分手，你的第一反应是——',
+    options:[
+      {text:'"为什么？哪里出了问题？我们可以解决"——冷静分析型',chars:['makise','houtarou','yukino']},
+      {text:'"我不要分手！！！"——情绪崩溃型',chars:['subaru','yuno','taiga']},
+      {text:'"……好。"——然后独自一人承受所有痛苦',chars:['hachiman','rei_ayanami','kaneki']},
+      {text:'"你认真的吗？"——先确认是不是在开玩笑',chars:['gintoki','mai','tomoya']}
+    ]
+  },
+  {
+    q:'在一起后，你更想——',
+    options:[
+      {text:'天天黏在一起——恋爱就是要腻歪',chars:['zero_two','subaru','mashiro']},
+      {text:'保持适度距离——各自有空间，但需要时立刻出现',chars:['mai','yukino','sesshoumaru']},
+      {text:'一起做有意义的事——学习/工作/旅行/成长',chars:['miyuki','kirito','chitanda']},
+      {text:'过舒服的日常——一起吃饭、追番、吐槽',chars:['gintoki','tanjiro','houtarou']}
+    ]
+  },
+  {
+    q:'你被表白了，但对象不是你喜欢的类型——',
+    options:[
+      {text:'认真拒绝，但态度温柔，不想伤害对方',chars:['tanjiro','tomoya','mai']},
+      {text:'直接拒绝——不给任何误会的机会才是善良',chars:['senjougahara','yukino','sesshoumaru']},
+      {text:'犹豫了——因为不想当坏人，结果反而让对方更难堪',chars:['hachiman','kaneki','rei_ayanami']},
+      {text:'先了解一下——也许相处后会发现对方的魅力',chars:['chitanda','houtarou','makise']}
+    ]
+  },
+  {
+    q:'恋爱中的占有欲——',
+    options:[
+      {text:'非常强——你是我的，谁都不许碰',chars:['yuno','zero_two','senjougahara']},
+      {text:'适度——有分寸的醋是恋爱调味料',chars:['kaguya','taiga','mai']},
+      {text:'几乎没有——信任是我爱你的方式',chars:['tanjiro','tomoya','gintoki']},
+      {text:'我装作不在意但其实在意得要死',chars:['hachiman','yukino','sesshoumaru']}
+    ]
+  },
+  {
+    q:'看到对象哭了——',
+    options:[
+      {text:'慌了——手忙脚乱找纸巾，用尽一切办法让 ta 笑',chars:['subaru','miyuki','chika']},
+      {text:'安静地抱住 ta——不需要说什么，我在就够了',chars:['tanjiro','tomoya','mai']},
+      {text:'先搞清楚哭的原因——解决根源比安慰更重要',chars:['makise','houtarou','yukino']},
+      {text:'莫名也想哭——共情能力太强了',chars:['kaneki','rei_ayanami','kousei']}
+    ]
+  },
+  {
+    q:'你觉得恋爱是什么颜色的？',
+    options:[
+      {text:'粉色——甜甜的，像草莓大福',chars:['chitanda','mashiro','chika']},
+      {text:'紫色——神秘又浪漫，让人沉醉',chars:['mai','makise','kaneki']},
+      {text:'红色——炽热浓烈，燃烧一切',chars:['zero_two','eren','yuno']},
+      {text:'透明色——恋爱本身没有颜色，是你赋予了它意义',chars:['hachiman','yukino','houtarou']}
+    ]
+  },
+  {
+    q:'你的朋友形容你的恋爱方式——',
+    options:[
+      {text:'"你是真的勇，说上就上"',chars:['kirito','zero_two','senjougahara']},
+      {text:'"你谈恋爱像在做学术研究"',chars:['makise','kaguya','houtarou']},
+      {text:'"你对 ta 也太好了吧？你是 ta 妈/爸吗？"',chars:['tanjiro','subaru','miyuki']},
+      {text:'"你到底喜欢不喜欢 ta？完全看不出来"',chars:['sesshoumaru','rei_ayanami','yukino']}
+    ]
+  },
+  {
+    q:'你最喜欢哪种表白方式？',
+    options:[
+      {text:'轰轰烈烈的告白——全校/全公司面前那种',chars:['subaru','chika','zero_two']},
+      {text:'安静私密的告白——只有两个人，说真心话',chars:['houtarou','yukino','rei_ayanami']},
+      {text:'不用告白——自然而然在一起，水到渠成',chars:['tanjiro','tomoya','gintoki']},
+      {text:'用行动告白——不需要语言，我做的每一件事都在说"我爱你"',chars:['sesshoumaru','kaneki','mai']}
+    ]
+  },
+  {
+    q:'你觉得"恋爱经验丰富"是——',
+    options:[
+      {text:'加分项——说明 ta 知道怎么爱人',chars:['mai','senjougahara','kirito']},
+      {text:'减分项——我想当第一个，也是最后一个',chars:['yuno','taiga','kaguya']},
+      {text:'无所谓——重要的是我们现在和以后',chars:['tanjiro','tomoya','gintoki']},
+      {text:'我自己没什么经验——所以对方有的话可能会安心一点',chars:['hachiman','rei_ayanami','kaneki']}
+    ]
+  },
+  {
+    q:'对象跟你说"我前任比你 XX 好多了"——',
+    options:[
+      {text:'"那你回去找前任啊。"——当场爆炸',chars:['taiga','yuno','eren']},
+      {text:'"哪里好？我改还不行吗？"——委屈但努力',chars:['subaru','miyuki','kaneki']},
+      {text:'"那你为什么现在在我身边？"——冷静反问',chars:['mai','makise','yukino']},
+      {text:'"你再说一遍试试"——低气压沉默，然后冷战三天',chars:['sesshoumaru','senjougahara','hachiman']}
+    ]
+  },
+  {
+    q:'如果对象有一天失忆了忘了你——',
+    options:[
+      {text:'从头再来——既然能爱上你一次，就能爱上第二次',chars:['kirito','subaru','tanjiro']},
+      {text:'默默守护在 ta 身边，不强求 ta 记起',chars:['sesshoumaru','kaneki','hachiman']},
+      {text:'用最极端的方式刺激 ta——就算恨我，也比忘了我好',chars:['yuno','zero_two','eren']},
+      {text:'我会把我们的故事写成日记/拍成视频让 ta 重新认识我',chars:['miyuki','makise','chitanda']}
+    ]
+  },
+  {
+    q:'恋爱对你来说——',
+    options:[
+      {text:'是必需品——没有爱的人生不完整',chars:['subaru','zero_two','yuno']},
+      {text:'是奢侈品——有最好，没有也能活',chars:['houtarou','hachiman','gintoki']},
+      {text:'是让你变成更好的人的催化剂',chars:['miyuki','tomoya','kousei']},
+      {text:'是一场有趣的大冒险——结局未知，但过程精彩',chars:['chika','chitanda','kirito']}
+    ]
+  },
+  {
+    q:'故事的结尾，你和对象白发苍苍坐在一起——你会说——',
+    options:[
+      {text:'"下辈子我还要找到你。"',chars:['subaru','tanjiro','yuno']},
+      {text:'"这一生，谢谢你陪我。"',chars:['mai','tomoya','kousei']},
+      {text:'"你看，我说我会一直和你在一起的吧。"',chars:['kirito','zero_two','miyuki']},
+      {text:'什么都不说，只是握紧对方的手',chars:['sesshoumaru','hachiman','houtarou']}
+    ]
+  }
+];
+
+// ==================== STATE ====================
+let scores = {};
+let currentQ = 0;
+let resultChar = null;
+
+const $start = document.getElementById('screen-start');
+const $quiz = document.getElementById('screen-quiz');
+const $result = document.getElementById('screen-result');
+const $qText = document.getElementById('q-text');
+const $options = document.getElementById('options-container');
+const $qNum = document.getElementById('q-num-label');
+const $qPct = document.getElementById('q-progress-text');
+const $progress = document.getElementById('progress-bar');
+const $posterModal = document.getElementById('poster-modal');
+const $posterCanvas = document.getElementById('poster-canvas');
+
+// ==================== SCREEN NAV ====================
+function showScreen(screen) {
+  [$start,$quiz,$result].forEach(s => s.classList.remove('active'));
+  screen.classList.add('active');
+}
+
+// ==================== QUIZ ====================
+function startQuiz() {
+  scores = {};
+  characters.forEach(c => scores[c.id] = 0);
+  currentQ = 0;
+  showScreen($quiz);
+  renderQuestion();
+}
+
+function renderQuestion() {
+  if (currentQ >= questions.length) return finishQuiz();
+  const q = questions[currentQ];
+  $qNum.textContent = `第 ${currentQ + 1} / 30 题`;
+  const pct = Math.round((currentQ / questions.length) * 100);
+  $progress.style.width = pct + '%';
+  $qPct.textContent = pct + '%';
+  $qText.textContent = q.q;
+  $options.innerHTML = '';
+
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    const letters = ['A','B','C','D'];
+    btn.innerHTML = `<span class="option-letter">${letters[i]}</span>${opt.text}`;
+    btn.addEventListener('click', () => {
+      // score
+      opt.chars.forEach(id => {
+        if (scores[id] !== undefined) scores[id]++;
+      });
+      currentQ++;
+      // flash
+      btn.classList.add('selected');
+      setTimeout(() => {
+        renderQuestion();
+      }, 160);
+    });
+    $options.appendChild(btn);
+  });
+}
+
+// ==================== FINISH ====================
+function finishQuiz() {
+  let topId = null, topScore = -1;
+  characters.forEach(c => {
+    const s = scores[c.id] || 0;
+    if (s > topScore) { topScore = s; topId = c.id; }
+  });
+  resultChar = characters.find(c => c.id === topId);
+
+  const c = resultChar;
+  $result.innerHTML = `
+    <div class="result-card">
+      <div class="result-avatar">${c.emoji}</div>
+      <div class="result-name">${c.name}</div>
+      <div style="font-size:14px;color:var(--dim);">${c.aka}</div>
+      <div class="result-type">💝 你的恋爱人格：${c.type}</div>
+      <div class="result-anime">
+        出自 <b>《${c.anime}》</b>（${c.animeJa}）
+      </div>
+      <div class="result-traits">
+        ${c.traits.map(t => `<span class="trait-tag">${t}</span>`).join('')}
+      </div>
+      <div class="result-desc">${c.desc}</div>
+      <div class="result-quote">「${c.quote}」</div>
+      <div class="result-match">${c.match}</div>
+      <div class="result-actions">
+        <button class="btn btn-primary btn-sm" onclick="showPoster()">🎨 生成海报</button>
+        <button class="btn btn-outline btn-sm" onclick="retakeQuiz()">🔄 重新测试</button>
+      </div>
+    </div>
+  `;
+  showScreen($result);
+}
+
+function retakeQuiz() { startQuiz(); }
+
+// ==================== POSTER ====================
+function showPoster() {
+  if (!resultChar) return;
+  const c = resultChar;
+  const canvas = $posterCanvas;
+  const dpr = 2, w = 375, h = 620;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  // bg
+  const grad = ctx.createLinearGradient(0,0,w,h);
+  grad.addColorStop(0,'#0d0814'); grad.addColorStop(.5,'#1a1030'); grad.addColorStop(1,'#0d0814');
+  ctx.fillStyle = grad; ctx.fillRect(0,0,w,h);
+
+  // hearts
+  ctx.globalAlpha = .06;
+  for (let i=0;i<12;i++) {
+    const hx = Math.random()*w, hy = Math.random()*h, hs = 10+Math.random()*30;
+    ctx.fillStyle = c.color;
+    drawHeart(ctx, hx, hy, hs);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // top accent
+  ctx.fillStyle = c.color; ctx.fillRect(0,0,w,4);
+
+  // emoji
+  ctx.font = '68px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(c.emoji, w/2, 95);
+
+  // name
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 28px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText(c.name, w/2, 150);
+
+  // aka
+  ctx.fillStyle = '#999'; ctx.font = '14px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText(c.aka, w/2, 174);
+
+  // type
+  ctx.fillStyle = c.color; ctx.font = 'bold 15px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText(`💝 ${c.type}`, w/2, 200);
+
+  // divider
+  ctx.strokeStyle = c.color; ctx.lineWidth = 1; ctx.globalAlpha = .4;
+  ctx.beginPath(); ctx.moveTo(50,218); ctx.lineTo(w-50,218); ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // anime
+  ctx.fillStyle = '#bbb'; ctx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText(`出自《${c.anime}》(${c.animeJa})`, w/2, 240);
+
+  // traits
+  let tx=24, ty=264;
+  ctx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
+  for (let t of c.traits) {
+    const tw = ctx.measureText(t).width + 18;
+    if (tx+tw > w-24) { tx=24; ty+=28; }
+    ctx.fillStyle = 'rgba(255,255,255,.06)';
+    roundRect(ctx, tx, ty-13, tw, 24, 12); ctx.fill();
+    ctx.fillStyle = c.color; ctx.fillText(t, tx+tw/2, ty+4);
+    tx += tw + 6;
+  }
+
+  // desc
+  let dy = ty + 40;
+  ctx.fillStyle = '#ccc'; ctx.font = '12.5px "PingFang SC","Microsoft YaHei",sans-serif';
+  const descLines = wrapText(ctx, c.desc, w-48, 12.5);
+  for (let line of descLines) { ctx.fillText(line, w/2, dy); dy += 20; }
+
+  // quote
+  dy += 8;
+  ctx.fillStyle = c.color; ctx.globalAlpha = .25;
+  ctx.fillRect(40, dy-8, w-80, 1);
+  ctx.globalAlpha = 1;
+  ctx.font = 'italic 13px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillStyle = c.color;
+  const quoteLines = wrapText(ctx, `「${c.quote}」`, w-72, 13);
+  dy += 18;
+  for (let line of quoteLines) { ctx.fillText(line, w/2, dy); dy += 20; }
+
+  // bottom
+  dy = Math.max(dy+8, h-44);
+  ctx.fillStyle = '#555'; ctx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText('扫码测测你的二次元恋爱人格', w/2, dy);
+  ctx.fillText('基于 25 位热门动漫角色 · 30 道情境测试题', w/2, dy+16);
+
+  ctx.fillStyle = c.color; ctx.fillRect(0, h-4, w, 4);
+
+  $posterModal.classList.add('show');
+}
+
+function drawHeart(ctx, x, y, s) {
+  ctx.beginPath();
+  const topY = y - s*0.35;
+  ctx.moveTo(x, y + s*0.4);
+  ctx.bezierCurveTo(x-s*1.2, y-s*0.3, x-s*0.6, y-s*0.5, x, topY);
+  ctx.bezierCurveTo(x+s*0.6, y-s*0.5, x+s*1.2, y-s*0.3, x, y+s*0.4);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+function wrapText(ctx, text, maxWidth, fontSize) {
+  const lines = []; let cur = '';
+  for (let ch of text) {
+    if (ctx.measureText(cur+ch).width > maxWidth && cur.length>0) { lines.push(cur); cur = ch; }
+    else cur += ch;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+function closePoster() { $posterModal.classList.remove('show'); }
+
+// ==================== INIT ====================
+showScreen($start);
+</script>
+</body>
+</html>

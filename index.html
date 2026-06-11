@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<title>测测你是哪部神作动漫的角色 | Bangumi 评分前50</title>
+<style>
+  :root {
+    --bg: #0a0a12;
+    --card: #141428;
+    --card2: #1a1a35;
+    --text: #e0e0f0;
+    --dim: #8888aa;
+    --cyan: #00e5ff;
+    --magenta: #ff4081;
+    --gold: #ffd740;
+    --green: #69f0ae;
+    --border: #2a2a4a;
+    --radius: 16px;
+    --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body {
+    width:100%; height:100%; overflow:hidden;
+    background:var(--bg); color:var(--text);
+    font-family:var(--font); font-size:15px;
+    -webkit-tap-highlight-color:transparent;
+    -webkit-font-smoothing:antialiased;
+    user-select:none; -webkit-user-select:none;
+  }
+
+  /* ========== BACKGROUND ========== */
+  #bg-canvas {
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    pointer-events:none; z-index:0;
+  }
+
+  /* ========== APP SHELL ========== */
+  #app {
+    position:relative; z-index:1;
+    width:100%; height:100%;
+    display:flex; flex-direction:column;
+    overflow:hidden;
+  }
+
+  /* ========== SCREENS ========== */
+  .screen {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    display:flex; flex-direction:column; align-items:center;
+    padding:24px 20px;
+    opacity:0; transform:translateY(20px);
+    transition: opacity .4s ease, transform .4s ease;
+    pointer-events:none;
+    overflow-y:auto; overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+  }
+  .screen.active {
+    opacity:1; transform:translateY(0);
+    pointer-events:auto;
+  }
+
+  /* ========== START SCREEN ========== */
+  #screen-start {
+    justify-content:center; gap:32px;
+  }
+  .logo-icon {
+    font-size:72px; animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100% { transform:translateY(0); }
+    50% { transform:translateY(-12px); }
+  }
+  .title {
+    font-size:28px; font-weight:900; text-align:center;
+    background:linear-gradient(135deg, var(--cyan), var(--magenta));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text;
+    line-height:1.4;
+  }
+  .subtitle {
+    font-size:14px; color:var(--dim); text-align:center;
+    line-height:1.6;
+  }
+  .bangumi-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--card); border:1px solid var(--border);
+    border-radius:20px; padding:6px 14px;
+    font-size:12px; color:var(--dim);
+  }
+  .bangumi-badge .dot {
+    width:6px; height:6px; border-radius:50%;
+    background:var(--cyan); animation:pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; }
+    50% { opacity:.3; }
+  }
+
+  /* Buttons */
+  .btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    gap:8px; border:none; border-radius:28px;
+    font-size:16px; font-weight:700; font-family:var(--font);
+    cursor:pointer; transition:all .25s ease;
+    padding:14px 40px; position:relative; overflow:hidden;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn:active { transform:scale(.96); }
+  .btn-primary {
+    background:linear-gradient(135deg, var(--cyan), #0091ea);
+    color:#000; box-shadow:0 4px 24px rgba(0,229,255,.3);
+  }
+  .btn-primary:hover { box-shadow:0 6px 32px rgba(0,229,255,.45); }
+  .btn-outline {
+    background:transparent; color:var(--cyan);
+    border:2px solid var(--cyan);
+  }
+  .btn-sm { padding:10px 24px; font-size:14px; border-radius:22px; }
+
+  /* ========== QUIZ SCREEN ========== */
+  #screen-quiz { padding-top:16px; }
+  .quiz-header {
+    width:100%; max-width:400px;
+    display:flex; flex-direction:column; gap:10px;
+    margin-bottom:8px; flex-shrink:0;
+  }
+  .quiz-topbar {
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:13px; color:var(--dim);
+  }
+  .progress-bar-outer {
+    width:100%; height:4px; background:var(--border);
+    border-radius:2px; overflow:hidden;
+  }
+  .progress-bar-inner {
+    height:100%; background:linear-gradient(90deg, var(--cyan), var(--magenta));
+    border-radius:2px; transition:width .35s ease;
+  }
+  .question-number {
+    font-size:13px; color:var(--magenta); font-weight:700;
+    letter-spacing:1px;
+  }
+  .question-text {
+    font-size:20px; font-weight:700; line-height:1.5;
+    color:var(--text); text-align:center;
+    padding:16px 0; max-width:400px;
+  }
+  .options-list {
+    width:100%; max-width:400px;
+    display:flex; flex-direction:column; gap:10px;
+    flex-shrink:0; padding-bottom:20px;
+  }
+  .option-btn {
+    display:flex; align-items:center; gap:12px;
+    width:100%; padding:14px 16px;
+    background:var(--card); border:1px solid var(--border);
+    border-radius:var(--radius); color:var(--text);
+    font-size:15px; font-family:var(--font); text-align:left;
+    cursor:pointer; transition:all .2s ease;
+    -webkit-tap-highlight-color:transparent;
+    line-height:1.4;
+  }
+  .option-btn:active {
+    transform:scale(.98); background:var(--card2);
+    border-color:var(--cyan);
+  }
+  .option-btn .opt-letter {
+    flex-shrink:0; width:32px; height:32px;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:50%; font-weight:800; font-size:14px;
+    background:var(--card2); color:var(--dim);
+    transition:all .2s ease;
+  }
+  .option-btn:active .opt-letter {
+    background:var(--cyan); color:#000;
+  }
+  .option-btn .opt-text { flex:1; }
+
+  /* ========== RESULT SCREEN ========== */
+  #screen-result {
+    justify-content:center; gap:20px;
+    padding-bottom:40px;
+  }
+  .result-card {
+    width:100%; max-width:360px;
+    background:var(--card); border:1px solid var(--border);
+    border-radius:20px; padding:28px 24px;
+    display:flex; flex-direction:column; align-items:center;
+    gap:16px;
+    box-shadow:0 8px 40px rgba(0,0,0,.5);
+  }
+  .result-avatar {
+    width:100px; height:100px; border-radius:50%;
+    background:linear-gradient(135deg, var(--cyan), var(--magenta));
+    display:flex; align-items:center; justify-content:center;
+    font-size:52px; box-shadow:0 0 30px rgba(0,229,255,.25);
+    flex-shrink:0;
+  }
+  .result-name {
+    font-size:26px; font-weight:900; text-align:center;
+    background:linear-gradient(135deg, var(--gold), var(--magenta));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text;
+  }
+  .result-anime {
+    font-size:13px; color:var(--dim); text-align:center;
+  }
+  .result-anime .rating {
+    color:var(--gold); font-weight:700;
+  }
+  .result-traits {
+    display:flex; flex-wrap:wrap; gap:6px; justify-content:center;
+  }
+  .trait-tag {
+    background:var(--card2); border:1px solid var(--border);
+    border-radius:14px; padding:4px 12px;
+    font-size:12px; color:var(--cyan);
+  }
+  .result-desc {
+    font-size:14px; color:var(--dim); text-align:center;
+    line-height:1.7; padding:0 8px;
+  }
+  .result-quote {
+    font-size:15px; font-style:italic; color:var(--gold);
+    text-align:center; padding:8px 0;
+    border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+    width:100%;
+  }
+  .result-actions {
+    display:flex; gap:12px; flex-wrap:wrap; justify-content:center;
+  }
+
+  /* ========== POSTER MODAL ========== */
+  #poster-modal {
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,.9); z-index:100;
+    display:flex; flex-direction:column; align-items:center;
+    justify-content:center; gap:16px;
+    opacity:0; pointer-events:none;
+    transition:opacity .3s ease;
+    padding:20px;
+  }
+  #poster-modal.show {
+    opacity:1; pointer-events:auto;
+  }
+  #poster-canvas {
+    max-width:90vw; max-height:65vh;
+    border-radius:12px; box-shadow:0 4px 30px rgba(0,0,0,.6);
+  }
+  .poster-hint {
+    font-size:13px; color:var(--dim);
+    text-align:center;
+  }
+  .poster-hint .icon { font-size:18px; }
+
+  /* ========== RESPONSIVE ========== */
+  @media (min-width:480px) {
+    .screen { padding:32px 28px; }
+    .title { font-size:32px; }
+    .question-text { font-size:22px; }
+    .result-card { max-width:400px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div id="app">
+
+  <!-- ===== START SCREEN ===== -->
+  <div class="screen active" id="screen-start">
+    <div class="logo-icon">🎭</div>
+    <div>
+      <div class="title">测测你是哪部<br>神作动漫的角色</div>
+    </div>
+    <div class="subtitle">
+      25 道动漫情境测试题<br>
+      匹配 Bangumi 评分前 50 神作中的经典角色
+    </div>
+    <div class="bangumi-badge">
+      <span class="dot"></span> 基于 Bangumi 番组计划评分排行
+    </div>
+    <button class="btn btn-primary" onclick="startQuiz()">
+      ⚡ 开始测试
+    </button>
+    <div style="font-size:12px;color:var(--dim);text-align:center;">
+      约 5 分钟 · 25 题 · 16 种角色结果
+    </div>
+  </div>
+
+  <!-- ===== QUIZ SCREEN ===== -->
+  <div class="screen" id="screen-quiz">
+    <div class="quiz-header">
+      <div class="quiz-topbar">
+        <span class="question-number" id="q-num-label">第 1 / 25 题</span>
+        <span id="q-progress-text" style="font-size:13px;color:var(--dim);">0%</span>
+      </div>
+      <div class="progress-bar-outer">
+        <div class="progress-bar-inner" id="progress-bar" style="width:0%;"></div>
+      </div>
+    </div>
+    <div class="question-text" id="q-text"></div>
+    <div class="options-list" id="options-container"></div>
+  </div>
+
+  <!-- ===== RESULT SCREEN ===== -->
+  <div class="screen" id="screen-result"></div>
+
+</div>
+
+<!-- ===== POSTER MODAL ===== -->
+<div id="poster-modal">
+  <canvas id="poster-canvas"></canvas>
+  <div class="poster-hint">
+    <span class="icon">👆</span> 长按图片保存到相册
+  </div>
+  <button class="btn btn-outline btn-sm" onclick="closePoster()">关闭</button>
+</div>
+
+<script>
+// ==================== BACKGROUND PARTICLES ====================
+(function() {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let w, h;
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  for (let i = 0; i < 50; i++) {
+    particles.push({
+      x: Math.random() * w, y: Math.random() * h,
+      vx: (Math.random() - .5) * .4,
+      vy: (Math.random() - .5) * .4,
+      r: Math.random() * 1.5 + .5,
+      a: Math.random() * .4 + .1
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    for (let p of particles) {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
+      if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(0,229,255,${p.a})`;
+      ctx.fill();
+    }
+    // draw connections
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < 80) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(255,64,129,${.06 * (1 - d/80)})`;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ==================== DATA ====================
+
+// 16 characters from Bangumi top 50 anime
+const characters = [
+  {
+    id: 'okabe', emoji: '🧪',
+    name: '岡部倫太郎',
+    aka: '凤凰院凶真',
+    anime: '命运石之门',
+    animeJa: 'STEINS;GATE',
+    rating: 8.8, rank: 8,
+    traits: ['中二病', '天才', '热血', '重情义'],
+    desc: '自称"疯狂科学家凤凰院凶真"，表面中二到没朋友，实则拥有穿越无数世界线也要拯救伙伴的觉悟。在孤独与疯狂之间，他是那个永不放弃的观测者。',
+    quote: '"这一切都是命运石之门的选择！"',
+    color: '#00e5ff'
+  },
+  {
+    id: 'spike', emoji: '🚬',
+    name: 'Spike Spiegel',
+    aka: '史派克·斯皮格尔',
+    anime: '星际牛仔',
+    animeJa: 'カウボーイビバップ',
+    rating: 9.1, rank: 4,
+    traits: ['潇洒', '随性', '浪漫', '身手不凡'],
+    desc: 'Bebop 号上的赏金猎人，永远一副漫不经心的样子，骨子里却是行星级的浪漫主义者。过去如烟，他选择用最帅的姿势面对一切。',
+    quote: '"一只眼眺望过去，一只眼注视未来。"',
+    color: '#ffd740'
+  },
+  {
+    id: 'gintoki', emoji: '🍓',
+    name: '坂田銀時',
+    aka: '万事屋阿银',
+    anime: '银魂',
+    animeJa: '銀魂',
+    rating: 8.7, rank: 19,
+    traits: ['死鱼眼', '甜食控', '吐槽役', '关键时刻超靠谱'],
+    desc: '天然卷死鱼眼，嗜甜如命的废柴武士。平日懒散到令人发指，但每当重要的人陷入危机，他会收起玩笑，展现白夜叉的真正实力。',
+    quote: '"与其想着怎样华丽地死去，不如想想怎样华丽地活下去吧。"',
+    color: '#69f0ae'
+  },
+  {
+    id: 'edward', emoji: '⚡',
+    name: '爱德华·艾尔利克',
+    aka: '钢之炼金术师',
+    anime: '钢之炼金术师 FA',
+    animeJa: '鋼の錬金術師 FA',
+    rating: 8.8, rank: 11,
+    traits: ['倔强', '热血', '天才', '矮个子（禁忌词）'],
+    desc: '史上最年轻的国家炼金术师，为挽回弟弟的身体踏上旅程。脾气火爆但内心温柔，"等价交换"是他的人生信条——虽然经常被说矮就暴走。',
+    quote: '"没有牺牲就没有获得。想要得到什么，就必须付出同等的代价。"',
+    color: '#ff5252'
+  },
+  {
+    id: 'rei', emoji: '♟️',
+    name: '桐山零',
+    aka: '将棋星人',
+    anime: '3月的狮子',
+    animeJa: '3月のライオン',
+    rating: 8.8, rank: 10,
+    traits: ['内向', '温柔', '孤独', '将棋天才'],
+    desc: '17 岁的职业将棋棋士，幼年失去家人，独自在将棋的世界中前行。看似冷漠的外表下，是一颗渴望温暖却不知如何表达的心。',
+    quote: '"将棋是我和这个世界唯一的连接。"',
+    color: '#b388ff'
+  },
+  {
+    id: 'haruhi', emoji: '🌟',
+    name: '涼宮ハルヒ',
+    aka: 'SOS团团长',
+    anime: '凉宫春日的忧郁',
+    animeJa: '涼宮ハルヒの憂鬱',
+    rating: 8.7, rank: 15,
+    traits: ['精力无限', '自我中心', '好奇心旺盛', '行动力爆表'],
+    desc: '对"无聊"过敏的超能少女，坚信世界上一定有外星人、未来人和超能力者。她的热情像核弹一样有感染力——当然，被她卷进去的人可就惨了。',
+    quote: '"我对普通的人类没有兴趣。你们之中如果有外星人、未来人、异世界人、超能力者，就来找我吧！"',
+    color: '#ff80ab'
+  },
+  {
+    id: 'shinji', emoji: '🎧',
+    name: '碇真嗣',
+    aka: 'EVA初号机驾驶员',
+    anime: '新世纪福音战士',
+    animeJa: '新世紀エヴァンゲリオン',
+    rating: 8.9, rank: 7,
+    traits: ['敏感', '自我怀疑', '渴望被需要', '内向'],
+    desc: '被父亲召唤到 NERV 总部的 14 岁少年，驾驶 EVA 初号机对抗使徒。他每一次战斗都在和自己的恐惧搏斗——"不能逃避"是他最痛苦的觉醒。',
+    quote: '"不能逃避。不能逃避。不能逃避……"',
+    color: '#7c4dff'
+  },
+  {
+    id: 'nagisa', emoji: '🌸',
+    name: '古河渚',
+    aka: '团子大家族',
+    anime: 'CLANNAD ～AFTER STORY～',
+    animeJa: 'CLANNAD 〜AFTER STORY〜',
+    rating: 9.2, rank: 2,
+    traits: ['温柔', '坚强', '善良', '从不放弃'],
+    desc: '体弱多病却从不向命运低头的女孩。喜欢团子大家族，梦想是演好话剧。她的温柔不是软弱——在最黑暗的时刻，她是支撑所有人走下去的光。',
+    quote: '"无论多么痛苦，只要还活着，就一定会有好事发生。"',
+    color: '#ffab91'
+  },
+  {
+    id: 'motoko', emoji: '🦾',
+    name: '草薙素子',
+    aka: '少佐',
+    anime: '攻壳机动队 SAC',
+    animeJa: '攻殻機動隊 S.A.C.',
+    rating: 9.2, rank: 1,
+    traits: ['冷静', '理性', '强大', '独立思考'],
+    desc: '公安九课的队长，全身义体化的最强战士。在电子之海中追寻"灵魂"的定义，她的冷静和判断力让所有对手胆寒——但她也会在深夜独自面对存在的困惑。',
+    quote: '"我之所以是我，是因为我的记忆和经历。哪怕身体是义体，灵魂也是真实的。"',
+    color: '#84ffff'
+  },
+  {
+    id: 'kenshin', emoji: '⚔️',
+    name: '绯村剑心',
+    aka: '刽子手拔刀斋',
+    anime: '浪客剑心 追忆篇',
+    animeJa: 'るろうに剣心 追憶編',
+    rating: 8.9, rank: 6,
+    traits: ['温和', '谦逊', '守护者', '背负过去'],
+    desc: '曾是幕末令人闻风丧胆的刽子手拔刀斋，如今手持逆刃刀立下不杀之誓。他用余生偿还过去的罪孽，守护每一个眼前的人——那温柔的微笑背后是不可言说的重量。',
+    quote: '"剑是凶器，剑术是杀人的伎俩。不管用多么美丽的语言去掩饰，那始终是事实。"',
+    color: '#ff6e40'
+  },
+  {
+    id: 'yang', emoji: '🍵',
+    name: '杨威利',
+    aka: '奇迹的杨',
+    anime: '银河英雄传说',
+    animeJa: '銀河英雄伝説',
+    rating: 8.7, rank: 17,
+    traits: ['懒散天才', '反战', '历史狂', '不情愿的英雄'],
+    desc: '不想当军人却成为不败提督的魔术师。最大爱好是喝红茶和读历史书，对权力毫无兴趣。他的每一个战术奇迹背后，都藏着一句"要是能回家看书就好了"。',
+    quote: '"有比战争更重要的东西。那就是和平。"',
+    color: '#ffe57f'
+  },
+  {
+    id: 'levi', emoji: '🧹',
+    name: '利威尔·阿克曼',
+    aka: '人类最强士兵',
+    anime: '进击的巨人',
+    animeJa: '進撃の巨人',
+    rating: 8.7, rank: 16,
+    traits: ['洁癖', '冷静', '外冷内热', '战力天花板'],
+    desc: '调查兵团的兵长，人类最强的战士。极度洁癖让他在战场上也要保持装备一尘不染。表面冷酷无情，但每一次部下牺牲，他都默默记在心里——然后用行动让他们的死有意义。',
+    quote: '"我从来不觉得这有什么意义。我只是做了自己该做的事。"',
+    color: '#80cbc4'
+  },
+  {
+    id: 'lelouch', emoji: '♚',
+    name: '鲁路修·兰佩路基',
+    aka: 'Zero',
+    anime: '反叛的鲁路修',
+    animeJa: 'コードギアス',
+    rating: 8.6, rank: 25,
+    traits: ['战略天才', '妹控', '偏执', '领袖魅力'],
+    desc: '被流放的布里塔尼亚皇子，获得 Geass 之力后化身为 Zero 掀起革命。他的每一步棋都精妙到令人窒息——为了妹妹娜娜莉，他不惜让全世界与自己为敌。',
+    quote: '"如果国王不动，那部下要如何跟随？"',
+    color: '#ce93d8'
+  },
+  {
+    id: 'madoka', emoji: '💖',
+    name: '鹿目圆',
+    aka: '圆神',
+    anime: '魔法少女小圆',
+    animeJa: '魔法少女まどか☆マギカ',
+    rating: 8.5, rank: 32,
+    traits: ['善良', '温柔', '舍己为人', '希望本身'],
+    desc: '一个普通的初中女生，却拥有一颗无比纯粹善良的心。在所有魔法少女陷入绝望的世界里，她做出了最温柔的抉择——成为"圆环之理"，在每一个时空拯救所有魔法少女。',
+    quote: '"如果有人说希望不存在，我会告诉他，希望是存在的。我一直都在这里。"',
+    color: '#f8bbd0'
+  },
+  {
+    id: 'light', emoji: '📓',
+    name: '夜神月',
+    aka: 'KIRA',
+    anime: '死亡笔记',
+    animeJa: 'DEATH NOTE',
+    rating: 8.5, rank: 34,
+    traits: ['高智商', '完美主义', '偏执', '新世界的神'],
+    desc: '捡到死亡笔记的天才高中生，决定用这本笔记清除世间的罪恶，成为新世界的神。他的正义感逐渐扭曲为可怕的偏执——与L的对决是动漫史上最精彩的智斗。',
+    quote: '"我要成为新世界的神。"',
+    color: '#ef5350'
+  },
+  {
+    id: 'saitama', emoji: '👊',
+    name: '埼玉',
+    aka: '秃头披风侠',
+    anime: '一拳超人',
+    animeJa: 'ワンパンマン',
+    rating: 8.4, rank: 45,
+    traits: ['无敌', '日常系', '兴趣使然', '强到无聊'],
+    desc: '因为太强所以秃了。一拳就能解决任何敌人，导致对战斗失去了所有激情。不管面对多恐怖的怪人，他的表情永远是"啊又来了"。成为英雄的理由？——兴趣使然。',
+    quote: '"我是一个兴趣使然的英雄。"',
+    color: '#ffcc02'
+  }
+];
+
+// ==================== 25 Questions ====================
+// Each option maps to character ids — the character gets +1 point when selected
+const questions = [
+  {
+    q: '你突然发现自己拥有了一项特殊能力，你的第一反应是——',
+    options: [
+      { text: '低调隐藏能力，继续过普通生活', chars: ['saitama','rei','nagisa'] },
+      { text: '用这份力量去改变世界的规则', chars: ['lelouch','light','haruhi'] },
+      { text: '先冷静分析能力的原理和边界', chars: ['motoko','yang','okabe'] },
+      { text: '召集值得信赖的伙伴，一起对抗潜在的威胁', chars: ['edward','kenshin','madoka'] }
+    ]
+  },
+  {
+    q: '深夜两点，你还在醒着。最可能的原因是什么？',
+    options: [
+      { text: '在执行一项秘密计划，不能停', chars: ['lelouch','light','okabe'] },
+      { text: '失眠了，脑子里在想一些人生大事', chars: ['shinji','motoko','rei'] },
+      { text: '追番/打游戏根本停不下来', chars: ['haruhi','gintoki','saitama'] },
+      { text: '打扫卫生，因为明天有重要的事', chars: ['levi','yang','kenshin'] }
+    ]
+  },
+  {
+    q: '伙伴被强敌抓走了，你打算怎么救人？',
+    options: [
+      { text: '独自闯入敌营，用拳头和实力说话', chars: ['edward','levi','gintoki'] },
+      { text: '先收集所有情报，制定完美的营救计划', chars: ['lelouch','motoko','yang'] },
+      { text: '联系其他伙伴，组队前往——人多力量大', chars: ['nagisa','madoka','okabe'] },
+      { text: '表面冷静思考对策，内心其实已经在暴走边缘', chars: ['kenshin','shinji','spike'] }
+    ]
+  },
+  {
+    q: '转生到了异世界，你最希望获得什么能力？',
+    options: [
+      { text: '无敌的战斗力，一拳碾压一切', chars: ['saitama','levi','edward'] },
+      { text: '超群的智慧和策略能力', chars: ['lelouch','light','yang'] },
+      { text: '治愈和保护他人的能力', chars: ['nagisa','madoka','kenshin'] },
+      { text: '自由自在、不受任何束缚的力量', chars: ['spike','haruhi','gintoki'] }
+    ]
+  },
+  {
+    q: '学园祭上，班主任强行拉你参加表演，你的反应是——',
+    options: [
+      { text: '主动组织策划，把整场演出变成自己的秀', chars: ['haruhi','lelouch','okabe'] },
+      { text: '一脸嫌弃但勉强上台，结果意外地表现不错', chars: ['shinji','gintoki','nagisa'] },
+      { text: '在后台默默做幕后工作，完美避开所有视线', chars: ['rei','motoko','kenshin'] },
+      { text: '直接溜走，去小卖部买吃的', chars: ['spike','saitama','yang'] }
+    ]
+  },
+  {
+    q: '有人嘲笑你最重要的梦想，你的反应是——',
+    options: [
+      { text: '当场反驳，甚至可能吵起来', chars: ['edward','haruhi','light'] },
+      { text: '表面不作声，心里已经做好一百步计划让他们闭嘴', chars: ['lelouch','motoko','rei'] },
+      { text: '不在意，他们不懂是他们的事', chars: ['saitama','gintoki','spike'] },
+      { text: '默默较劲，用实际成果证明给他们看', chars: ['nagisa','kenshin','madoka'] }
+    ]
+  },
+  {
+    q: '在战斗中，你的战斗风格更接近哪一种？',
+    options: [
+      { text: '热血冲锋，越战越勇，正面硬刚', chars: ['edward','haruhi','saitama'] },
+      { text: '冷静分析，精准打击，一击必杀', chars: ['motoko','levi','light'] },
+      { text: '用智谋和陷阱取胜，不费一兵一卒', chars: ['lelouch','yang','okabe'] },
+      { text: '能不打就不打，但被逼无奈时绝不手软', chars: ['spike','gintoki','kenshin'] }
+    ]
+  },
+  {
+    q: '你最不能接受的事情是什么？',
+    options: [
+      { text: '背叛伙伴', chars: ['edward','kenshin','okabe'] },
+      { text: '无聊和平庸的日常', chars: ['haruhi','spike','light'] },
+      { text: '看到无辜的人受伤害', chars: ['nagisa','madoka','rei'] },
+      { text: '自己的无能为力', chars: ['shinji','levi','yang'] }
+    ]
+  },
+  {
+    q: '你喜欢什么样的放松方式？',
+    options: [
+      { text: '窝在家里看书/追番/打游戏，不出门', chars: ['rei','shinji','saitama'] },
+      { text: '去吃顿好的，甜品和零食是灵魂', chars: ['gintoki','nagisa','yang'] },
+      { text: '约朋友一起去冒险或聚会', chars: ['haruhi','edward','madoka'] },
+      { text: '黄昏时分独自散步，听音乐，放空自己', chars: ['spike','motoko','kenshin'] }
+    ]
+  },
+  {
+    q: '你被关在一个空房间里 24 小时（没有手机），你会——',
+    options: [
+      { text: '无聊到发疯，想尽一切办法找乐子', chars: ['haruhi','edward','gintoki'] },
+      { text: '安静坐着思考，享受难得的独处时光', chars: ['rei','yang','motoko'] },
+      { text: '锻炼身体，做俯卧撑和仰卧起坐', chars: ['levi','saitama','kenshin'] },
+      { text: '仔细观察房间的每一个细节，寻找逃脱方法', chars: ['lelouch','light','okabe'] }
+    ]
+  },
+  {
+    q: '如果世界明天就要毁灭，你今天会做什么？',
+    options: [
+      { text: '和最重要的人待在一起，平静地度过', chars: ['nagisa','kenshin','rei'] },
+      { text: '用最后的时间疯狂享受，不留遗憾', chars: ['spike','haruhi','gintoki'] },
+      { text: '尝试找到阻止毁灭的方法，到最后一秒都不放弃', chars: ['okabe','edward','lelouch'] },
+      { text: '接受它，然后安静地回顾自己的一生', chars: ['motoko','yang','shinji'] }
+    ]
+  },
+  {
+    q: '在教室/办公室里，你的座位通常在——',
+    options: [
+      { text: '靠窗的角落，可以安静地待在', chars: ['rei','shinji','motoko'] },
+      { text: '正中间，方便和大家交流互动', chars: ['haruhi','nagisa','madoka'] },
+      { text: '最后一排靠门，方便随时溜走', chars: ['gintoki','yang','spike'] },
+      { text: '无所谓，但一定收拾得整整齐齐', chars: ['levi','light','kenshin'] }
+    ]
+  },
+  {
+    q: '你觉得自己最大的弱点是什么？',
+    options: [
+      { text: '太过善良，不忍心拒绝别人', chars: ['nagisa','madoka','kenshin'] },
+      { text: '太过倔强，不服输容易上头', chars: ['edward','haruhi','light'] },
+      { text: '太过理性，有时候显得冷漠', chars: ['motoko','levi','yang'] },
+      { text: '太过懒散，能拖到明天的事绝不在今天做', chars: ['gintoki','saitama','spike'] }
+    ]
+  },
+  {
+    q: '同伴因失误导致任务失败，你会——',
+    options: [
+      { text: '严厉批评，但私下会帮 ta 收拾残局', chars: ['levi','edward','motoko'] },
+      { text: '安慰 ta 不要自责，一起重新来过', chars: ['nagisa','madoka','kenshin'] },
+      { text: '冷静复盘失败原因，确保下次不会重蹈覆辙', chars: ['yang','light','okabe'] },
+      { text: '笑着说"常有的事"，其实已经在想补救方案', chars: ['gintoki','spike','haruhi'] }
+    ]
+  },
+  {
+    q: '你觉得"正义"是什么？',
+    options: [
+      { text: '保护身边的每一个人', chars: ['nagisa','kenshin','madoka'] },
+      { text: '建立更美好的世界秩序，哪怕手段极端', chars: ['lelouch','light','edward'] },
+      { text: '正义没有绝对标准，我只做力所能及的事', chars: ['yang','motoko','spike'] },
+      { text: '做自己认为对的事，不被他人左右', chars: ['gintoki','saitama','okabe'] }
+    ]
+  },
+  {
+    q: '你被卷入了时间循环，同一天不断重复——',
+    options: [
+      { text: '利用循环不断学习，直到找到打破循环的方法', chars: ['okabe','lelouch','motoko'] },
+      { text: '一开始很恐慌，然后慢慢接受并寻找意义', chars: ['shinji','madoka','rei'] },
+      { text: '先疯玩一阵子，反正会重置，不玩白不玩', chars: ['haruhi','spike','gintoki'] },
+      { text: '冷静记录每次循环的差异，找到规律', chars: ['light','yang','edward'] }
+    ]
+  },
+  {
+    q: '如果要用一个标签定义你和朋友的关系，你更像——',
+    options: [
+      { text: '保护者——朋友需要的时候，我永远在', chars: ['kenshin','levi','nagisa'] },
+      { text: '气氛组——有我在的地方绝对不会冷场', chars: ['haruhi','gintoki','okabe'] },
+      { text: '旁观者——不太主动，但关键时刻从不掉链子', chars: ['spike','rei','yang'] },
+      { text: '军师——朋友遇到问题第一个来找我出主意', chars: ['lelouch','motoko','light'] }
+    ]
+  },
+  {
+    q: '面对一个陌生的社交场合，你的本能反应是——',
+    options: [
+      { text: '找角落待着，等有人主动来搭话', chars: ['shinji','rei','motoko'] },
+      { text: '自然地融入其中，和大家聊起来', chars: ['haruhi','nagisa','spike'] },
+      { text: '观察每个人的表情和行为，分析局势', chars: ['lelouch','light','yang'] },
+      { text: '直接找食物区，填饱肚子再说', chars: ['gintoki','saitama','edward'] }
+    ]
+  },
+  {
+    q: '你的人生信条最接近以下哪一句？',
+    options: [
+      { text: '"没有牺牲就没有获得"——等价交换', chars: ['edward','okabe','levi'] },
+      { text: '"与其不做后悔，不如做了再后悔"', chars: ['haruhi','spike','gintoki'] },
+      { text: '"温柔地对待这个世界，世界也会温柔地回应你"', chars: ['nagisa','madoka','kenshin'] },
+      { text: '"真相只有一个，理性是最可靠的武器"', chars: ['motoko','light','yang'] }
+    ]
+  },
+  {
+    q: '你的搭档是个十足的猪队友，你会——',
+    options: [
+      { text: '嘴上疯狂吐槽，但还是会帮到底', chars: ['gintoki','edward','levi'] },
+      { text: '制定严格的训练计划，让 ta 变强', chars: ['motoko','light','lelouch'] },
+      { text: '耐心引导 ta，相信每个人都有闪光点', chars: ['nagisa','madoka','kenshin'] },
+      { text: '习惯了，反正我自己就能解决大部分问题', chars: ['saitama','spike','yang'] }
+    ]
+  },
+  {
+    q: '你喜欢什么类型的音乐？',
+    options: [
+      { text: '摇滚/燃曲，让人热血沸腾的那种', chars: ['edward','haruhi','okabe'] },
+      { text: '爵士/蓝调，有故事感的旋律', chars: ['spike','yang','rei'] },
+      { text: '安静治愈的音乐，让人内心平静', chars: ['nagisa','shinji','kenshin'] },
+      { text: '电子/工业风，科技感强的', chars: ['motoko','light','levi'] }
+    ]
+  },
+  {
+    q: '在团队中，你通常扮演的角色是——',
+    options: [
+      { text: '领导者——制定策略，发号施令', chars: ['lelouch','motoko','light'] },
+      { text: '行动派——第一个冲上去执行', chars: ['edward','haruhi','saitama'] },
+      { text: '粘合剂——照顾每个人的感受，维护团队和谐', chars: ['nagisa','madoka','kenshin'] },
+      { text: '自由人——不太管别人，但关键时刻能逆转局势', chars: ['gintoki','spike','yang'] }
+    ]
+  },
+  {
+    q: '你觉得自己最像哪种动物？',
+    options: [
+      { text: '狼——忠诚、团队协作、必要时凶狠', chars: ['kenshin','levi','okabe'] },
+      { text: '猫——独立、优雅、我行我素', chars: ['spike','motoko','rei'] },
+      { text: '兔子——温和、敏感、但繁殖力…不对，是生命力顽强', chars: ['nagisa','shinji','madoka'] },
+      { text: '猩猩——热血、直接、有时候不过脑子', chars: ['edward','haruhi','saitama'] }
+    ]
+  },
+  {
+    q: '故事的最后，你希望你的结局是——',
+    options: [
+      { text: '和重要的人一起，平静而幸福地生活下去', chars: ['nagisa','kenshin','rei'] },
+      { text: '潇洒地留下一个背影，开始下一段旅程', chars: ['spike','gintoki','yang'] },
+      { text: '改变了世界，即使代价是自己孤独', chars: ['lelouch','light','okabe'] },
+      { text: '成为了更好的自己，无愧于这一路走来', chars: ['edward','madoka','haruhi'] }
+    ]
+  },
+  {
+    q: '路边蹲着一只受伤的猫，你会——',
+    options: [
+      { text: '二话不说带去宠物医院，然后收养', chars: ['nagisa','madoka','kenshin'] },
+      { text: '简单处理伤口，给点吃的，然后潇洒离开', chars: ['spike','gintoki','saitama'] },
+      { text: '犹豫一下，但怕照顾不好，帮它找领养', chars: ['shinji','rei','yang'] },
+      { text: '仔细观察伤势，用科学方法帮它处理，然后联系专业救助', chars: ['motoko','edward','levi'] }
+    ]
+  }
+];
+
+// ==================== STATE ====================
+let scores = {};        // { charId: number }
+let currentQ = 0;
+let resultChar = null;
+
+// DOM refs
+const $start = document.getElementById('screen-start');
+const $quiz = document.getElementById('screen-quiz');
+const $result = document.getElementById('screen-result');
+const $qText = document.getElementById('q-text');
+const $opts = document.getElementById('options-container');
+const $progress = document.getElementById('progress-bar');
+const $qNum = document.getElementById('q-num-label');
+const $qPct = document.getElementById('q-progress-text');
+const $posterModal = document.getElementById('poster-modal');
+const $posterCanvas = document.getElementById('poster-canvas');
+
+// ==================== SCREEN SWITCHER ====================
+function showScreen(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  screen.classList.add('active');
+}
+
+// ==================== START ====================
+function startQuiz() {
+  scores = {};
+  currentQ = 0;
+  resultChar = null;
+  showScreen($quiz);
+  renderQuestion();
+}
+
+// ==================== RENDER QUESTION ====================
+function renderQuestion() {
+  if (currentQ >= questions.length) {
+    finishQuiz();
+    return;
+  }
+  const q = questions[currentQ];
+  $qNum.textContent = `第 ${currentQ + 1} / ${questions.length} 题`;
+  const pct = Math.round((currentQ / questions.length) * 100);
+  $progress.style.width = pct + '%';
+  $qPct.textContent = pct + '%';
+  $qText.textContent = q.q;
+
+  const letters = ['A', 'B', 'C', 'D'];
+  $opts.innerHTML = q.options.map((opt, i) => `
+    <button class="option-btn" onclick="pickAnswer(${i})">
+      <span class="opt-letter">${letters[i]}</span>
+      <span class="opt-text">${opt.text}</span>
+    </button>
+  `).join('');
+}
+
+function pickAnswer(optIdx) {
+  const q = questions[currentQ];
+  const selectedChars = q.options[optIdx].chars;
+  selectedChars.forEach(id => {
+    scores[id] = (scores[id] || 0) + 1;
+  });
+  currentQ++;
+
+  // animate progress bar
+  const pct = Math.round((currentQ / questions.length) * 100);
+  $progress.style.width = pct + '%';
+  $qPct.textContent = pct + '%';
+
+  // short delay then next
+  setTimeout(() => {
+    renderQuestion();
+  }, 150);
+}
+
+// ==================== FINISH ====================
+function finishQuiz() {
+  // find top character
+  let topId = null, topScore = -1;
+  const ids = characters.map(c => c.id);
+  for (let id of ids) {
+    const s = scores[id] || 0;
+    if (s > topScore) { topScore = s; topId = id; }
+  }
+  resultChar = characters.find(c => c.id === topId);
+
+  // render result
+  const c = resultChar;
+  $result.innerHTML = `
+    <div class="result-card">
+      <div class="result-avatar">${c.emoji}</div>
+      <div class="result-name">${c.name}</div>
+      <div style="font-size:14px;color:var(--dim);">${c.aka}</div>
+      <div class="result-anime">
+        出自：${c.anime} <span style="font-size:12px;">(${c.animeJa})</span><br>
+        Bangumi 评分 <span class="rating">${c.rating}</span> · 排名第 <span class="rating">${c.rank}</span>
+      </div>
+      <div class="result-traits">
+        ${c.traits.map(t => `<span class="trait-tag">${t}</span>`).join('')}
+      </div>
+      <div class="result-desc">${c.desc}</div>
+      <div class="result-quote">${c.quote}</div>
+      <div class="result-actions">
+        <button class="btn btn-primary btn-sm" onclick="showPoster()">🎨 生成海报</button>
+        <button class="btn btn-outline btn-sm" onclick="retakeQuiz()">🔄 重新测试</button>
+      </div>
+    </div>
+  `;
+  showScreen($result);
+}
+
+function retakeQuiz() {
+  startQuiz();
+}
+
+// ==================== POSTER ====================
+function showPoster() {
+  if (!resultChar) return;
+  const c = resultChar;
+  const canvas = $posterCanvas;
+  const dpr = 2;
+  const w = 375, h = 600;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  // bg gradient
+  const grad = ctx.createLinearGradient(0, 0, w, h);
+  grad.addColorStop(0, '#0a0a1a');
+  grad.addColorStop(.5, '#141430');
+  grad.addColorStop(1, '#0a0a1a');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  // decorative circles
+  ctx.globalAlpha = .08;
+  ctx.fillStyle = c.color;
+  ctx.beginPath(); ctx.arc(300, 100, 140, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(50, 480, 100, 0, Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // top accent line
+  ctx.fillStyle = c.color;
+  ctx.fillRect(0, 0, w, 4);
+
+  // emoji
+  ctx.font = '64px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(c.emoji, w/2, 100);
+
+  // name
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 28px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText(c.name, w/2, 152);
+
+  // aka
+  ctx.fillStyle = '#888';
+  ctx.font = '14px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText(c.aka, w/2, 176);
+
+  // divider
+  ctx.strokeStyle = c.color;
+  ctx.lineWidth = 1;
+  ctx.globalAlpha = .5;
+  ctx.beginPath(); ctx.moveTo(60, 196); ctx.lineTo(w-60, 196); ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // anime info
+  ctx.fillStyle = '#aaa';
+  ctx.font = '13px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText(`出自《${c.anime}》(${c.animeJa})`, w/2, 220);
+  ctx.fillStyle = c.color;
+  ctx.font = 'bold 15px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText(`Bangumi 评分 ${c.rating} · 排名 #${c.rank}`, w/2, 244);
+
+  // traits
+  let tx = 28, ty = 272;
+  ctx.font = '12px "PingFang SC","Microsoft YaHei",sans-serif';
+  for (let t of c.traits) {
+    const tw = ctx.measureText(t).width + 20;
+    if (tx + tw > w - 28) { tx = 28; ty += 30; }
+    ctx.fillStyle = 'rgba(255,255,255,.08)';
+    ctx.beginPath();
+    const rx = tx, ry = ty - 14, rw = tw, rh = 26;
+    ctx.moveTo(rx + 14, ry);
+    ctx.lineTo(rx + rw - 14, ry);
+    ctx.quadraticCurveTo(rx + rw, ry, rx + rw, ry + 14);
+    ctx.lineTo(rx + rw, ry + rh - 14);
+    ctx.quadraticCurveTo(rx + rw, ry + rh, rx + rw - 14, ry + rh);
+    ctx.lineTo(rx + 14, ry + rh);
+    ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rh - 14);
+    ctx.lineTo(rx, ry + 14);
+    ctx.quadraticCurveTo(rx, ry, rx + 14, ry);
+    ctx.fill();
+    ctx.fillStyle = c.color;
+    ctx.fillText(t, tx + tw/2, ty + 4);
+    tx += tw + 8;
+  }
+
+  // description
+  ctx.fillStyle = '#ccc';
+  ctx.font = '13px "PingFang SC","Microsoft YaHei",sans-serif';
+  const descLines = wrapText(ctx, c.desc, w - 56, 13);
+  let dy = ty + 42;
+  for (let line of descLines) {
+    ctx.fillText(line, w/2, dy);
+    dy += 22;
+  }
+
+  // quote
+  dy += 8;
+  ctx.fillStyle = c.color;
+  ctx.globalAlpha = .3;
+  ctx.fillRect(40, dy - 10, w - 80, 1);
+  ctx.globalAlpha = 1;
+  ctx.font = 'italic 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillStyle = c.color;
+  const quoteLines = wrapText(ctx, c.quote, w - 80, 14);
+  dy += 22;
+  for (let line of quoteLines) {
+    ctx.fillText(line, w/2, dy);
+    dy += 22;
+  }
+
+  // bottom
+  ctx.fillStyle = '#555';
+  ctx.font = '11px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText('扫码测测你是哪部神作动漫的角色', w/2, h - 28);
+  ctx.fillText('基于 Bangumi 番组计划评分前 50 动画', w/2, h - 12);
+
+  // bottom accent
+  ctx.fillStyle = c.color;
+  ctx.fillRect(0, h - 4, w, 4);
+
+  $posterModal.classList.add('show');
+}
+
+function wrapText(ctx, text, maxWidth, fontSize) {
+  const words = text.split('');
+  const lines = [];
+  let current = '';
+  for (let ch of words) {
+    const test = current + ch;
+    if (ctx.measureText(test).width > maxWidth && current.length > 0) {
+      lines.push(current);
+      current = ch;
+    } else {
+      current = test;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
+
+function closePoster() {
+  $posterModal.classList.remove('show');
+}
+
+// Long press to save — handled natively in WeChat
+// In WeChat browser, long-pressing an img triggers the save menu.
+// We render as canvas, so we need to convert and offer an img.
+$posterCanvas.addEventListener('contextmenu', e => {
+  // allow long press context menu in mobile
+});
+
+// For non-WeChat, add a download fallback
+$posterCanvas.addEventListener('click', function() {
+  // In WeChat, long press works natively on canvas elements
+});
+
+// ==================== INIT ====================
+showScreen($start);
+</script>
+</body>
+</html>
